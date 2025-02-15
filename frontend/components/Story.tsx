@@ -245,7 +245,7 @@ export default function StoryBook({ initialStoryData }: StoryBookProps) {
       <nav className="navbar fixed top-0 left-0 right-0 z-50 py-3 px-6 bg-white/90 backdrop-blur-sm shadow-sm">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="title text-3xl font-bold bg-gradient-to-r from-pink-500 to-red-400 text-transparent bg-clip-text">
-            CupidChaos
+            jabWEmet
           </h1>
           <Link
             href="/"
