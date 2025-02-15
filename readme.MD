@@ -1,0 +1,1 @@
+jabWEmet is a fun web application that transforms ordinary love stories into delightfully cringeworthy storybooks. Upload a photo, share how you met, and let our AI generate a hilariously cheesy narrative that you'll both laugh at for years to come.
