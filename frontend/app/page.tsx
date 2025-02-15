@@ -136,7 +136,7 @@ export default function Home() {
       {/* Navbar */}
       <nav className="  fixed top-0 left-0 right-0 z-50 py-2 px-4">
         <div className="container mx-auto max-w-7xl">
-          <h1 className="title text-2xl md:text-3xl">CupidChaos</h1>
+          <h1 className="title text-2xl md:text-3xl">jabWEmet</h1>
           
         </div>
       </nav>
