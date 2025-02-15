@@ -564,14 +564,7 @@ export default function StoryBook({ initialStoryData }: StoryBookProps) {
       `}</style>
 
       {/* Add loading overlay in the JSX, just before the closing main tag */}
-      {isGeneratingPDF && (
-        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-pink-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-700 font-medium">Generating PDF...</p>
-          </div>
-        </div>
-      )}
+    
     </main>
   );
 }
