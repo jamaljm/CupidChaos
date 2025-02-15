@@ -41,7 +41,7 @@ const serif=Instrument_Serif({
 
 
 export const metadata: Metadata = {
-  title: "cupidChaos",
+  title: "jabWEmet",
   description: "love story generator",
 };
 

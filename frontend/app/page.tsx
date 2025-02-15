@@ -137,7 +137,6 @@ export default function Home() {
       <nav className="  fixed top-0 left-0 right-0 z-50 py-2 px-4">
         <div className="container mx-auto max-w-7xl">
           <h1 className="title text-2xl md:text-3xl">jabWEmet</h1>
-          
         </div>
       </nav>
 
@@ -216,7 +215,7 @@ export default function Home() {
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm mb-1">
-                    Person 1's Name
+                    Who are youuu ?
                   </label>
                   <input
                     type="text"
@@ -230,7 +229,7 @@ export default function Home() {
 
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm mb-1">
-                    Person 2's Name
+                    Expose your pookie 🎀
                   </label>
                   <input
                     type="text"
