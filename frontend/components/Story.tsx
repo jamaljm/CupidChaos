@@ -56,6 +56,9 @@ export default function StoryBook({ initialStoryData }: StoryBookProps) {
   const bookRef = useRef<HTMLDivElement>(null);
   const totalPages = storyData.segments.length + 1; // +1 for the cover page
 
+  // Add loading state near the top of the component
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
   // Update the calculateZIndex function
   const calculateZIndex = (index: number) => {
     if (index === -1) {
@@ -84,145 +87,148 @@ export default function StoryBook({ initialStoryData }: StoryBookProps) {
     }, 1000);
   };
 
-  // Replace the generatePDF function with this new version
+  // Update the generatePDF function
   const generatePDF = async () => {
-    const pdf = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: "a4",
-    });
-
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 20;
-    const contentWidth = pageWidth - 2 * margin;
-
-    // Add cover page
-    pdf.setFontSize(24);
-    const titleLines = pdf.splitTextToSize(storyData.title, contentWidth);
-    pdf.text(titleLines, pageWidth / 2, 40, { align: "center" });
-
-    // Add cover image if exists
-    if (storyData.coverImage) {
-      try {
-        const img = document.createElement("img");
-        img.src = storyData.coverImage;
-        await new Promise((resolve) => {
-          img.onload = resolve;
-        });
-
-        // Calculate image dimensions to fit the page while maintaining aspect ratio
-        const imgAspectRatio = img.width / img.height;
-        let imgWidth = contentWidth;
-        let imgHeight = imgWidth / imgAspectRatio;
-
-        if (imgHeight > pageHeight - 100) {
-          imgHeight = pageHeight - 100;
-          imgWidth = imgHeight * imgAspectRatio;
-        }
-
-        pdf.addImage(
-          img,
-          "JPEG",
-          (pageWidth - imgWidth) / 2,
-          60,
-          imgWidth,
-          imgHeight,
-          undefined,
-          "MEDIUM"
-        );
-      } catch (error) {
-        console.error("Error adding cover image:", error);
-      }
-    }
-
-    // Add subtitle
-    pdf.setFontSize(14);
-    
-
-    // Add story segments
-    for (let i = 0; i < storyData.segments.length; i++) {
-      const segment = storyData.segments[i];
-      pdf.addPage();
-
-      // Add page number
-      pdf.setFontSize(12);
-      pdf.text(`${i + 2}`, pageWidth - margin, margin);
-
-      // Add segment image
-      try {
-        const img = document.createElement("img");
-        img.src = segment.imageUrl;
-        await new Promise((resolve) => {
-          img.onload = resolve;
-        });
-
-        const imgAspectRatio = img.width / img.height;
-        let imgWidth = contentWidth;
-        let imgHeight = imgWidth / imgAspectRatio;
-
-        if (imgHeight > pageHeight / 2) {
-          imgHeight = pageHeight / 2;
-          imgWidth = imgHeight * imgAspectRatio;
-        }
-
-        pdf.addImage(
-          img,
-          "JPEG",
-          (pageWidth - imgWidth) / 2,
-          40,
-          imgWidth,
-          imgHeight,
-          undefined,
-          "MEDIUM"
-        );
-
-        // Add segment text
-        pdf.setFontSize(12);
-        const textY = 40 + imgHeight + 20;
-        const textLines = pdf.splitTextToSize(
-          segment.segment.replace(/^### Segment \d+: /, ""),
-          contentWidth
-        );
-        pdf.text(textLines, margin, textY);
-      } catch (error) {
-        console.error(`Error adding image for segment ${i + 1}:`, error);
-        // If image fails, still add the text
-        pdf.setFontSize(12);
-        const textLines = pdf.splitTextToSize(segment.segment, contentWidth);
-        pdf.text(textLines, margin, 40);
-      }
-    }
-
-    // Add decorative elements
-    for (let i = 0; i < pdf.getNumberOfPages(); i++) {
-      pdf.setPage(i + 1);
-
-      // Add page border
-      pdf.setDrawColor(255, 192, 203); // Pink color
-      pdf.setLineWidth(0.5);
-      pdf.rect(margin / 2, margin / 2, pageWidth - margin, pageHeight - margin);
-
-      // Add corner decorations
-      const decorSize = 10;
-      pdf.setFillColor(255, 192, 203);
-      pdf.circle(margin / 2, margin / 2, decorSize / 2, "F");
-      pdf.circle(pageWidth - margin / 2, margin / 2, decorSize / 2, "F");
-      pdf.circle(margin / 2, pageHeight - margin / 2, decorSize / 2, "F");
-      pdf.circle(
-        pageWidth - margin / 2,
-        pageHeight - margin / 2,
-        decorSize / 2,
-        "F"
-      );
-    }
-
-    // Save the PDF
+    setIsGeneratingPDF(true);
     try {
+      const pdf = new jsPDF({
+        orientation: "p",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - 2 * margin;
+
+      // Add cover page
+      pdf.setFontSize(24);
+      const titleLines = pdf.splitTextToSize(storyData.title, contentWidth);
+      pdf.text(titleLines, pageWidth / 2, 40, { align: "center" });
+
+      // Add cover image if exists
+      if (storyData.coverImage) {
+        try {
+          const img = document.createElement("img");
+          img.src = storyData.coverImage;
+          await new Promise((resolve) => {
+            img.onload = resolve;
+          });
+
+          // Calculate image dimensions to fit the page while maintaining aspect ratio
+          const imgAspectRatio = img.width / img.height;
+          let imgWidth = contentWidth;
+          let imgHeight = imgWidth / imgAspectRatio;
+
+          if (imgHeight > pageHeight - 100) {
+            imgHeight = pageHeight - 100;
+            imgWidth = imgHeight * imgAspectRatio;
+          }
+
+          pdf.addImage(
+            img,
+            "JPEG",
+            (pageWidth - imgWidth) / 2,
+            60,
+            imgWidth,
+            imgHeight,
+            undefined,
+            "MEDIUM"
+          );
+        } catch (error) {
+          console.error("Error adding cover image:", error);
+        }
+      }
+
+      // Add subtitle
+      pdf.setFontSize(14);
+      
+
+      // Add story segments
+      for (let i = 0; i < storyData.segments.length; i++) {
+        const segment = storyData.segments[i];
+        pdf.addPage();
+
+        // Add page number
+        pdf.setFontSize(12);
+        pdf.text(`${i + 2}`, pageWidth - margin, margin);
+
+        // Add segment image
+        try {
+          const img = document.createElement("img");
+          img.src = segment.imageUrl;
+          await new Promise((resolve) => {
+            img.onload = resolve;
+          });
+
+          const imgAspectRatio = img.width / img.height;
+          let imgWidth = contentWidth;
+          let imgHeight = imgWidth / imgAspectRatio;
+
+          if (imgHeight > pageHeight / 2) {
+            imgHeight = pageHeight / 2;
+            imgWidth = imgHeight * imgAspectRatio;
+          }
+
+          pdf.addImage(
+            img,
+            "JPEG",
+            (pageWidth - imgWidth) / 2,
+            40,
+            imgWidth,
+            imgHeight,
+            undefined,
+            "MEDIUM"
+          );
+
+          // Add segment text
+          pdf.setFontSize(12);
+          const textY = 40 + imgHeight + 20;
+          const textLines = pdf.splitTextToSize(
+            segment.segment.replace(/^### Segment \d+: /, ""),
+            contentWidth
+          );
+          pdf.text(textLines, margin, textY);
+        } catch (error) {
+          console.error(`Error adding image for segment ${i + 1}:`, error);
+          // If image fails, still add the text
+          pdf.setFontSize(12);
+          const textLines = pdf.splitTextToSize(segment.segment, contentWidth);
+          pdf.text(textLines, margin, 40);
+        }
+      }
+
+      // Add decorative elements
+      for (let i = 0; i < pdf.getNumberOfPages(); i++) {
+        pdf.setPage(i + 1);
+
+        // Add page border
+        pdf.setDrawColor(255, 192, 203); // Pink color
+        pdf.setLineWidth(0.5);
+        pdf.rect(margin / 2, margin / 2, pageWidth - margin, pageHeight - margin);
+
+        // Add corner decorations
+        const decorSize = 10;
+        pdf.setFillColor(255, 192, 203);
+        pdf.circle(margin / 2, margin / 2, decorSize / 2, "F");
+        pdf.circle(pageWidth - margin / 2, margin / 2, decorSize / 2, "F");
+        pdf.circle(margin / 2, pageHeight - margin / 2, decorSize / 2, "F");
+        pdf.circle(
+          pageWidth - margin / 2,
+          pageHeight - margin / 2,
+          decorSize / 2,
+          "F"
+        );
+      }
+
+      // Save the PDF
       pdf.save(`${storyData.title.slice(0, 30)}.pdf`);
     } catch (error) {
       console.error("Error saving PDF:", error);
       alert("There was an error generating the PDF. Please try again.");
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -556,6 +562,16 @@ export default function StoryBook({ initialStoryData }: StoryBookProps) {
           }
         }
       `}</style>
+
+      {/* Add loading overlay in the JSX, just before the closing main tag */}
+      {isGeneratingPDF && (
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-pink-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-gray-700 font-medium">Generating PDF...</p>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
