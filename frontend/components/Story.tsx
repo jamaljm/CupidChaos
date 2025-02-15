@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Cover from "./Cover";
+import { jsPDF } from "jspdf";
 
 // Define the types for our story data
 interface StorySegment {
@@ -81,6 +82,148 @@ export default function StoryBook({ initialStoryData }: StoryBookProps) {
     setTimeout(() => {
       setFlipping(false);
     }, 1000);
+  };
+
+  // Replace the generatePDF function with this new version
+  const generatePDF = async () => {
+    const pdf = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 20;
+    const contentWidth = pageWidth - 2 * margin;
+
+    // Add cover page
+    pdf.setFontSize(24);
+    const titleLines = pdf.splitTextToSize(storyData.title, contentWidth);
+    pdf.text(titleLines, pageWidth / 2, 40, { align: "center" });
+
+    // Add cover image if exists
+    if (storyData.coverImage) {
+      try {
+        const img = document.createElement("img");
+        img.src = storyData.coverImage;
+        await new Promise((resolve) => {
+          img.onload = resolve;
+        });
+
+        // Calculate image dimensions to fit the page while maintaining aspect ratio
+        const imgAspectRatio = img.width / img.height;
+        let imgWidth = contentWidth;
+        let imgHeight = imgWidth / imgAspectRatio;
+
+        if (imgHeight > pageHeight - 100) {
+          imgHeight = pageHeight - 100;
+          imgWidth = imgHeight * imgAspectRatio;
+        }
+
+        pdf.addImage(
+          img,
+          "JPEG",
+          (pageWidth - imgWidth) / 2,
+          60,
+          imgWidth,
+          imgHeight,
+          undefined,
+          "MEDIUM"
+        );
+      } catch (error) {
+        console.error("Error adding cover image:", error);
+      }
+    }
+
+    // Add subtitle
+    pdf.setFontSize(14);
+    
+
+    // Add story segments
+    for (let i = 0; i < storyData.segments.length; i++) {
+      const segment = storyData.segments[i];
+      pdf.addPage();
+
+      // Add page number
+      pdf.setFontSize(12);
+      pdf.text(`${i + 2}`, pageWidth - margin, margin);
+
+      // Add segment image
+      try {
+        const img = document.createElement("img");
+        img.src = segment.imageUrl;
+        await new Promise((resolve) => {
+          img.onload = resolve;
+        });
+
+        const imgAspectRatio = img.width / img.height;
+        let imgWidth = contentWidth;
+        let imgHeight = imgWidth / imgAspectRatio;
+
+        if (imgHeight > pageHeight / 2) {
+          imgHeight = pageHeight / 2;
+          imgWidth = imgHeight * imgAspectRatio;
+        }
+
+        pdf.addImage(
+          img,
+          "JPEG",
+          (pageWidth - imgWidth) / 2,
+          40,
+          imgWidth,
+          imgHeight,
+          undefined,
+          "MEDIUM"
+        );
+
+        // Add segment text
+        pdf.setFontSize(12);
+        const textY = 40 + imgHeight + 20;
+        const textLines = pdf.splitTextToSize(
+          segment.segment.replace(/^### Segment \d+: /, ""),
+          contentWidth
+        );
+        pdf.text(textLines, margin, textY);
+      } catch (error) {
+        console.error(`Error adding image for segment ${i + 1}:`, error);
+        // If image fails, still add the text
+        pdf.setFontSize(12);
+        const textLines = pdf.splitTextToSize(segment.segment, contentWidth);
+        pdf.text(textLines, margin, 40);
+      }
+    }
+
+    // Add decorative elements
+    for (let i = 0; i < pdf.getNumberOfPages(); i++) {
+      pdf.setPage(i + 1);
+
+      // Add page border
+      pdf.setDrawColor(255, 192, 203); // Pink color
+      pdf.setLineWidth(0.5);
+      pdf.rect(margin / 2, margin / 2, pageWidth - margin, pageHeight - margin);
+
+      // Add corner decorations
+      const decorSize = 10;
+      pdf.setFillColor(255, 192, 203);
+      pdf.circle(margin / 2, margin / 2, decorSize / 2, "F");
+      pdf.circle(pageWidth - margin / 2, margin / 2, decorSize / 2, "F");
+      pdf.circle(margin / 2, pageHeight - margin / 2, decorSize / 2, "F");
+      pdf.circle(
+        pageWidth - margin / 2,
+        pageHeight - margin / 2,
+        decorSize / 2,
+        "F"
+      );
+    }
+
+    // Save the PDF
+    try {
+      pdf.save(`${storyData.title.slice(0, 30)}.pdf`);
+    } catch (error) {
+      console.error("Error saving PDF:", error);
+      alert("There was an error generating the PDF. Please try again.");
+    }
   };
 
   // Cleanup localStorage when component unmounts
@@ -313,27 +456,29 @@ export default function StoryBook({ initialStoryData }: StoryBookProps) {
           </div>
         </div>
 
-        {/* Print button - updated styling */}
-        <button
-          className="mt-8 bg-gradient-to-r from-pink-400 to-red-400 hover:from-pink-500 hover:to-red-500 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition flex items-center"
-          onClick={() => window.print()}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        {/* Update the buttons section */}
+        <div className="flex justify-center gap-4 mt-8">
+          <button
+            className="bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition flex items-center"
+            onClick={generatePDF}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-            />
-          </svg>
-          Print Our Story
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            Print Story
+          </button>
+        </div>
       </div>
 
       {/* Add CSS for 3D effects and animations */}
