@@ -59,8 +59,12 @@ async function generateStoryWithImages(coupleNames, meetingStory) {
     // Generate images for each segment
     const storySegments = await Promise.all(
       segments.map(async (segment, index) => {
-        const imagePrompt = `Create a cute, romantic, storybook-style illustration for this love story moment: ${segment}. 
-      Make it whimsical and slightly humorous, with a touch of anime/cartoon style. Include the couple in a memorable pose.`;
+        const imagePrompt = `Create a wholesome storybook-style illustration for this story segment: ${segment}. 
+        Style: Simple, clean digital art with soft colors
+        Setting: Based on the story context
+        Characters: Two generic figures interacting naturally
+        Tone: Light and cheerful
+        Important: Keep the style simple and universal`;
 
         const image = await openai.images.generate({
           model: "dall-e-3",
