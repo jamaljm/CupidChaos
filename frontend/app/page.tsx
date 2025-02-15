@@ -1,12 +1,15 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
+  const router = useRouter()
   const [person1, setPerson1] = useState('')
   const [person2, setPerson2] = useState('')
   const [meetingStory, setMeetingStory] = useState('')
   const [file, setFile] = useState<File | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -14,10 +17,28 @@ export default function Home() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log({ person1, person2, meetingStory, file })
-    // Add form submission logic here
+    setIsSubmitting(true)
+    
+    try {
+      // Here you would typically:
+      // 1. Create a FormData object
+      // 2. Append all your form data (names, story, file)
+      // 3. Submit it to your backend API
+      // 4. Wait for response
+      
+      // For demo purposes, we'll just simulate a delay
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Then navigate to the story page
+      router.push('/story')
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      // Handle error (show error message, etc.)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -73,7 +94,7 @@ export default function Home() {
 
           {/* Right side form */}
           <div className="lg:w-1/2 lg:pl-16">
-            <div className="form-container p-8">
+            <div className="form-container p-8 bg-white rounded-xl shadow-lg">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">Create Your Love Story</h3>
               
               <form onSubmit={handleSubmit}>
@@ -83,7 +104,7 @@ export default function Home() {
                     type="text"
                     value={person1}
                     onChange={(e) => setPerson1(e.target.value)}
-                    className="input-field w-full px-4 py-3 rounded-lg outline-none"
+                    className="input-field w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-pink-300"
                     placeholder="Enter name..."
                     required
                   />
@@ -95,7 +116,7 @@ export default function Home() {
                     type="text"
                     value={person2}
                     onChange={(e) => setPerson2(e.target.value)}
-                    className="input-field w-full px-4 py-3 rounded-lg outline-none"
+                    className="input-field w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-pink-300"
                     placeholder="Enter name..."
                     required
                   />
@@ -106,7 +127,7 @@ export default function Home() {
                   <textarea
                     value={meetingStory}
                     onChange={(e) => setMeetingStory(e.target.value)}
-                    className="input-field w-full px-4 py-3 rounded-lg outline-none"
+                    className="input-field w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-pink-300"
                     rows={4}
                     placeholder="Tell us your story..."
                     required
@@ -115,7 +136,7 @@ export default function Home() {
                 
                 <div className="mb-8">
                   <label className="block text-gray-700 mb-2">Upload Your Picture</label>
-                  <div className="border-2 border-dashed border-pink-200 rounded-lg p-6 text-center">
+                  <div className="border-2 border-dashed border-pink-200 bg-pink-50 rounded-lg p-6 text-center">
                     <svg className="mx-auto h-12 w-12 text-pink-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
@@ -141,9 +162,20 @@ export default function Home() {
                 
                 <button
                   type="submit"
-                  className="btn-submit w-full text-white font-bold py-3 px-4 rounded-xl"
+                  disabled={isSubmitting}
+                  className="btn-submit w-full text-white font-bold py-3 px-4 rounded-xl bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 transition shadow-lg flex items-center justify-center"
                 >
-                  Generate Our Cringe Love Story!
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Creating Your Story...
+                    </>
+                  ) : (
+                    'Generate Our Cringe Love Story!'
+                  )}
                 </button>
               </form>
             </div>
