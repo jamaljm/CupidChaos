@@ -41,8 +41,10 @@ async function generateStoryWithImages(coupleNames, meetingStory) {
     const storyTitle = titleCompletion.choices[0].message.content.trim();
 
     // Generate creative story using GPT-4
-    const storyPrompt = `Create a humorous and slightly cringe-worthy love story in 5 segments based on how this couple met. 
-    Make it entertaining and funny, but keep each segment concise (2-3 sentences max).
+    const storyPrompt = `Create a humorous and slightly cringe-worthy love story based on how this couple met.
+    Write it as a continuous narrative with natural scene breaks (separated by blank lines).
+    Make it entertaining and funny, with each scene being 2-3 sentences max.
+    Do not include any segment numbers, titles, or labels - just the story content itself.
     Couple: ${coupleNames}
     How they met: ${meetingStory}`;
 
@@ -50,7 +52,7 @@ async function generateStoryWithImages(coupleNames, meetingStory) {
       model: "gpt-4-turbo-2024-04-09",
       messages: [{ role: "user", content: storyPrompt }],
       temperature: 1,
-      max_tokens: 500,
+      max_tokens: 1000,
     });
 
     const story = storyCompletion.choices[0].message.content;
